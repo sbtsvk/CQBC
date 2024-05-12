@@ -1,0 +1,78 @@
+import dash
+from dash import html
+import psycopg2 as psy
+
+dbname = "QCBC"
+user = "User1"
+password = "password111"
+host = "localhost"
+port = "5432"
+
+try:
+    conn = psy.connect(
+        dbname=dbname,
+        user=user,
+        password=password,
+        host=host,
+        port=port
+    )
+    print("Connected to PostgreSQL database successfully!")
+except psy.OperationalError as e:
+    print(f"Unable to connect to database. Error: {e}")
+
+app = dash.Dash(__name__, external_stylesheets=['C:\\Users\\Lenovo\\Desktop\\Proyecto_ing_datos\\ex.css'])
+
+def fetch_data_from_db(query):
+    try:
+        conn = psy.connect(
+            dbname=dbname,
+            user=user,
+            password=password,
+            host=host,
+            port=port
+        )
+        cur = conn.cursor()
+        cur.execute(query)
+        data = cur.fetchall()
+        conn.close()
+        print("Data fetched successfully:", data)
+        return data
+    except psy.OperationalError as e:
+        print(f"Unable to connect to database. Error: {e}")
+        return None
+
+def get_countries_data():
+    query = "SELECT * FROM country;"
+    return fetch_data_from_db(query)
+
+def get_continent_data():
+    query = "SELECT * FROM continent;"
+    return fetch_data_from_db(query)
+
+def get_batch_data():
+    query = "SELECT * FROM Coffee_batch;"
+    return fetch_data_from_db(query)
+
+def get_quality_data():
+    query = "SELECT * FROM Coffee_quality;"
+    return fetch_data_from_db(query)
+
+app.layout = html.Div([
+    html.Div(className='header', children=[
+        html.H1("Calidad del Café por País")
+    ]),
+    html.Div(className='container', children=[
+        html.Div(className='content', children=[
+            html.P("Cafeina :) ."),
+            html.Table([
+                html.Tr([html.Th("Country"), html.Th("Quality")]),
+                html.Tbody([
+                    html.Tr([html.Td(country), html.Td(quality)]) for country, quality in get_countries_data()
+                ])
+            ])
+        ])
+    ]),
+])
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
