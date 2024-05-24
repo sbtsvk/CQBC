@@ -20,7 +20,7 @@ try:
 except psy.OperationalError as e:
     print(f"Unable to connect to database. Error: {e}")
 
-app = dash.Dash(__name__, external_stylesheets=['C:\\Users\\Lenovo\\Desktop\\Proyecto_ing_datos\\ex.css'])
+app = dash.Dash(__name__)
 
 def fetch_data_from_db(query):
     try:
