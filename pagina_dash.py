@@ -60,12 +60,48 @@ def get_locations():
     query = "select distinct continent_fk, country_fk from coffee_batch where country_fk is not null order by country_fk"
     return fetch_data_from_db(query)
 def create_table(data, headers):
-    return html.Table([
-        html.Tr([html.Th(header) for header in headers]),
-        html.Tbody([
-            html.Tr([html.Td(cell) for cell in row]) for row in data
-        ])
-    ])
+    table_style = {
+        'borderCollapse': 'collapse',
+        'width': '100%',
+        'border': '1px solid #ddd',
+        'font-size': '14px'
+    }
+    th_style = {
+        'padding': '8px',
+        'textAlign': 'left',
+        'border': '1px solid #ddd',
+        'backgroundColor': '#f2f2f2',
+        'color': '#333'
+    }
+    td_style = {
+        'padding': '8px',
+        'textAlign': 'left',
+        'border': '1px solid #ddd'
+    }
+
+    return html.Table(
+        style=table_style,
+        children=[
+            html.Thead(
+                children=[
+                    html.Tr(
+                        children=[
+                            html.Th(header, style=th_style) for header in headers
+                        ]
+                    )
+                ]
+            ),
+            html.Tbody(
+                children=[
+                    html.Tr(
+                        children=[
+                            html.Td(cell, style=td_style) for cell in row
+                        ]
+                    ) for row in data
+                ]
+            )
+        ]
+    )
 
 app.layout = html.Div([
     html.Div(className='header', children=[
