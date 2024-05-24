@@ -70,3 +70,106 @@ body {
 .styled-table tr:nth-child(even) {
     background-color: #f2f2f2;
 }
+/*********** PARTE DEL DASH ***********/
+ import dash
+from dash import html, dcc, Input, Output
+import psycopg2 as psy
+import plotly.graph_objs as go
+
+dbname = "QCBC"
+user = "user1"
+password = "password111"
+host = "localhost"
+port = "5433"
+
+# Establecer conexión a la base de datos
+try:
+    conn = psy.connect(
+        dbname=dbname,
+        user=user,
+        password=password,
+        host=host,
+        port=port
+    )
+    print("Connected to PostgreSQL database successfully!")
+except psy.OperationalError as e:
+    print(f"Unable to connect to database. Error: {e}")
+
+app = dash.Dash(__name__)
+
+# Funciones para obtener datos de la base de datos
+def fetch_data_from_db(query):
+    try:
+        cur = conn.cursor()
+        cur.execute(query)
+        data = cur.fetchall()
+        cur.close()
+        print("Data fetched successfully:")
+        return data
+    except psy.OperationalError as e:
+        print(f"Unable to connect to database. Error: {e}")
+        return None
+
+def get_countries_data():
+    query = "SELECT * FROM country;"
+    return fetch_data_from_db(query)
+
+def get_quality_data():
+    query = "SELECT * FROM Coffee_quality;"
+    return fetch_data_from_db(query)
+
+# Crear gráfico interactivo
+def create_graph(data):
+    trace = go.Bar(
+        x=[row[0] for row in data],
+        y=[row[1] for row in data],
+        marker=dict(color='rgb(26, 118, 255)')
+    )
+    layout = go.Layout(
+        title='Average Aroma by Country',
+        xaxis=dict(title='Country'),
+        yaxis=dict(title='Average Aroma')
+    )
+    return dcc.Graph(id='quality-graph', figure={'data': [trace], 'layout': layout})
+
+# Actualizar la aplicación Dash
+app.layout = html.Div([
+    html.Div(className='header', children=[
+        html.H1("CuppingData: Quality of Coffee By Countries (QCBC)")
+    ]),
+    html.Div(className='container', children=[
+        html.Div(className='content', children=[
+            html.P("Analyzing what you are drinking..."),
+            html.Div(className='graph-container', children=[
+                create_graph(get_countries_data())  # Mostrar el gráfico por defecto
+            ]),
+            html.Div(className='filter-container', children=[
+                html.Label('Select data:'),
+                dcc.Dropdown(
+                    id='data-dropdown',
+                    options=[
+                        {'label': 'Quality by Country', 'value': 'country'},
+                        {'label': 'Quality by Continent', 'value': 'continent'}
+                    ],
+                    value='country'
+                )
+            ])
+        ])
+    ])
+])
+
+# Callback para actualizar el gráfico según la selección del usuario
+@app.callback(
+    Output('quality-graph', 'figure'),
+    [Input('data-dropdown', 'value')]
+)
+def update_graph(selected_data):
+    if selected_data == 'country':
+        return {'data': [go.Bar(x=[row[0] for row in get_countries_data()], y=[row[1] for row in get_countries_data()])],
+                'layout': go.Layout(title='Average Aroma by Country', xaxis=dict(title='Country'), yaxis=dict(title='Average Aroma'))}
+    elif selected_data == 'continent':
+        return {'data': [go.Bar(x=[row[0] for row in get_quality_data()], y=[row[1] for row in get_quality_data()])],
+                'layout': go.Layout(title='Average Aroma by Continent', xaxis=dict(title='Continent'), yaxis=dict(title='Average Aroma'))}
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
