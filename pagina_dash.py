@@ -3,10 +3,10 @@ from dash import html
 import psycopg2 as psy
 
 dbname = "QCBC"
-user = "User1"
+user = "user1"
 password = "password111"
 host = "localhost"
-port = "5432"
+port = "5433"
 
 try:
     conn = psy.connect(
