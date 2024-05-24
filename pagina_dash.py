@@ -35,14 +35,14 @@ def fetch_data_from_db(query):
         cur.execute(query)
         data = cur.fetchall()
         conn.close()
-        print("Data fetched successfully:", data)
+        print("Data fetched successfully:")
         return data
     except psy.OperationalError as e:
         print(f"Unable to connect to database. Error: {e}")
         return None
 
 def get_countries_data():
-    query = "SELECT country_origin, avg_aroma FROM country;"
+    query = "SELECT * FROM country;"
     return fetch_data_from_db(query)
 
 def get_continent_data():
@@ -61,20 +61,98 @@ def get_locations():
     return fetch_data_from_db(query)
 app.layout = html.Div([
     html.Div(className='header', children=[
-        html.H1("Calidad del Café por País")
+        html.H1("CuppingData: Quality of Coffee By Countries (QCBC)")
     ]),
     html.Div(className='container', children=[
         html.Div(className='content', children=[
-            html.P("Todos los paises y continentes para el análisis de los datos:) ."),
-            html.Table([
-                html.Tr([html.Th("Continent"), html.Th("Country")]),
-                html.Tbody([
-                    html.Tr([html.Td(continent), html.Td(country)]) for continent, country in get_locations()
-                ])
-            ])
+            html.P("Analizing what you are drinking... ... ..."),
+            html.Button("Show Country Data", id="show-country-button", n_clicks=0),
+            html.Button("Show Continent Data", id="show-continent-button", n_clicks=0),
+            html.Button("Show Coffee Batch Data", id="show-batch-button", n_clicks=0),
+            html.Button("Show Coffee Quality Data", id="show-quality-button", n_clicks=0),
+            html.Button("Show Analized Countries", id="show-locations-button", n_clicks=0),  # New button
+            html.Div(id="tables-container")
         ])
     ]),
 ])
+
+
+@app.callback(
+    Output("tables-container", "children"),
+    [
+        Input("show-country-button", "n_clicks"),
+        Input("show-continent-button", "n_clicks"),
+        Input("show-batch-button", "n_clicks"),
+        Input("show-locations-button", "n_clicks"),
+        Input("show-quality-button", "n_clicks")  # New input
+    ]
+)
+def display_tables(n_clicks_country, n_clicks_continent, n_clicks_batch, n_clicks_locations, n_clicks_quality):  # Updated function signature
+    ctx = dash.callback_context
+
+    if not ctx.triggered:
+        return []
+
+    button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+
+    if button_id == "show-country-button":
+        country_data = get_countries_data()
+        headers = [
+            "Origin", "Avg Aroma", "Avg Flavor", "Avg Aftertaste", "Avg Acidity", "Avg Body", 
+            "Avg Balance", "Avg Uniformity", "Avg Clean Cup", "Avg Sweetness", "Avg Moisture", 
+            "Avg Quakers", "Avg Defects One", "Avg Defects Two", "Record Count"
+        ]
+        country_table = create_table(country_data, headers)
+        return [
+            html.H2("Country Data"),
+            country_table
+        ]
+    elif button_id == "show-continent-button":
+        continent_data = get_continent_data()
+        headers = [
+            "Origin", "Avg Aroma", "Avg Flavor", "Avg Aftertaste", "Avg Acidity", "Avg Body", 
+            "Avg Balance", "Avg Uniformity", "Avg Clean Cup", "Avg Sweetness", "Avg Moisture", 
+            "Avg Quakers", "Avg Defects One", "Avg Defects Two", "Record Count"
+        ]
+        continent_table = create_table(continent_data, headers)
+        return [
+            html.H2("Continent Data"),
+            continent_table
+        ]
+    elif button_id == "show-batch-button":
+        batch_data = get_batch_data()
+        headers = [
+            "Rec ID", "Continent FK", "Country FK", "Processing Method", "Harvest Year", "Expiration Date"
+        ]
+        batch_table = create_table(batch_data, headers)
+        return [
+            html.H2("Coffee Batch Data"),
+            batch_table
+        ]
+    elif button_id == "show-locations-button":
+        locations_data = get_locations()
+        headers = [
+            "Continent FK", "Country FK"
+        ]
+        locations_table = create_table(locations_data, headers)
+        return [
+            html.H2("Locations Data"),
+            locations_table
+        ]
+    elif button_id == "show-quality-button":  # New condition
+        quality_data = get_quality_data()
+        headers = [
+            "Rec ID FK", "Species", "Variety", "Color", "Aroma", "Flavor", "Aftertaste", "Acidity", 
+            "Body", "Balance", "Uniformity", "Clean Cup", "Sweetness", "Moisture", "Quakers", 
+            "Defect One", "Defect Two"
+        ]
+        quality_table = create_table(quality_data, headers)
+        return [
+            html.H2("Coffee Quality Data"),
+            quality_table
+        ]
+
+    return []
 
 if __name__ == '__main__':
     app.run_server(debug=True)
