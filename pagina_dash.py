@@ -58,7 +58,7 @@ def get_quality_data():
     return fetch_data_from_db(query)
 def get_locations():
     query = "select distinct continent_fk, country_fk from coffee_batch where country_fk is not null order by country_fk"
-
+    return fetch_data_from_db(query)
 app.layout = html.Div([
     html.Div(className='header', children=[
         html.H1("Calidad del Café por País")
