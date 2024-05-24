@@ -42,7 +42,7 @@ def fetch_data_from_db(query):
         return None
 
 def get_countries_data():
-    query = "SELECT * FROM country;"
+    query = "SELECT country_origin, avg_aroma FROM country;"
     return fetch_data_from_db(query)
 
 def get_continent_data():
@@ -56,6 +56,8 @@ def get_batch_data():
 def get_quality_data():
     query = "SELECT * FROM Coffee_quality;"
     return fetch_data_from_db(query)
+def get_locations():
+    query = "select distinct continent_fk, country_fk from coffee_batch where country_fk is not null order by country_fk"
 
 app.layout = html.Div([
     html.Div(className='header', children=[
@@ -63,11 +65,11 @@ app.layout = html.Div([
     ]),
     html.Div(className='container', children=[
         html.Div(className='content', children=[
-            html.P("Cafeina :) ."),
+            html.P("Todos los paises y continentes para el análisis de los datos:) ."),
             html.Table([
-                html.Tr([html.Th("Country"), html.Th("Quality")]),
+                html.Tr([html.Th("Continent"), html.Th("Country")]),
                 html.Tbody([
-                    html.Tr([html.Td(country), html.Td(quality)]) for country, quality in get_countries_data()
+                    html.Tr([html.Td(continent), html.Td(country)]) for continent, country in get_locations()
                 ])
             ])
         ])
