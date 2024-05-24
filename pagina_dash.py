@@ -59,6 +59,14 @@ def get_quality_data():
 def get_locations():
     query = "select distinct continent_fk, country_fk from coffee_batch where country_fk is not null order by country_fk"
     return fetch_data_from_db(query)
+def create_table(data, headers):
+    return html.Table([
+        html.Tr([html.Th(header) for header in headers]),
+        html.Tbody([
+            html.Tr([html.Td(cell) for cell in row]) for row in data
+        ])
+    ])
+
 app.layout = html.Div([
     html.Div(className='header', children=[
         html.H1("CuppingData: Quality of Coffee By Countries (QCBC)")
