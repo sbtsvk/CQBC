@@ -107,11 +107,11 @@ def create_table(data, headers):
 
 app.layout = html.Div([
     html.Div(className='header', children=[
-        html.H1("Calidad del Café por País, Continente, Lote de Café y Calidad")
+        html.H1("CuppingData: Quality of Coffee By Country (QCBC)")
     ]),
     html.Div(className='container', children=[
         html.Div(className='content', children=[
-            html.P("Cafeina :)"),
+            html.P("Cupping Data..."),
             html.Button("Show Country Data", id="show-country-button", n_clicks=0),
             html.Button("Show Continent Data", id="show-continent-button", n_clicks=0),
         ]),
@@ -120,10 +120,15 @@ app.layout = html.Div([
             html.Button("Show Coffee Quality Data", id="show-quality-button", n_clicks=0)
         ]),
         html.Div(className='content', children=[
-            html.Button("Show Analized Countries", id="show-locations-button", n_clicks=0),
+            html.Button("Show Analized countries", id="show-locations-button", n_clicks=0)
+        ]),
+        html.Div(className='content', children=[
+            html.Button("Show COntinent Pie Chart", id="show-continent-quality-pie-button", n_clicks=0)
         ])
     ]),
-    html.Div(id="tables-container") 
+    html.Div(id="tables-container"),
+    html.Div(id="pie-charts-container")
+])
 
 @app.callback(
     Output("tables-container", "children"),
@@ -201,7 +206,36 @@ def display_tables(n_clicks_country, n_clicks_continent, n_clicks_batch, n_click
         ]
 
     return []
+@app.callback(
+    Output("pie-charts-container", "children"),
+    [Input("show-continent-quality-pie-button", "n_clicks")]
+)
+def display_continent_pie_charts(n_clicks_quality_pie):
+    if not n_clicks_quality_pie:
+        return []
+    continent_data = get_continent_data()
+    if not continent_data:
+        return []
+    continent_names = [row[0] for row in continent_data]
+    column_names = continent_data[0][1:]
+    column_values = [row[1:] for row in continent_data]
+    pie_charts = []
+    attribute_names = [
+        "AVG_Aroma", "AVG_Flavor", "AVG_Aftertaste", "AVG_Acidity", "AVG_Body", 
+        "AVG_Balance", "AVG_Uniformity", "AVG_Clean.Cup", "AVG_Sweetness", "AVG_Moisture", 
+        "AVG_Quakers", "AVG_Category.One.Defects", "AVG_Category.Two.Defects", "Record Count"
+    ]
+    for i, column in enumerate(column_names):
+        values = [row[i] for row in column_values]
+        total_value = sum(values)
+        percentages = [value / total_value * 100 for value in values]
+        percentages = [round(percentage, 2) for percentage in percentages]
 
-
+        pie_chart_data = go.Figure(
+            data=[go.Pie(labels=continent_names, values=percentages, hole=0.3)],
+            layout=go.Layout(title=f"Pie Chart for {attribute_names[i]}")
+        )
+        pie_charts.append(dcc.Graph(figure=pie_chart_data))
+    return pie_charts
 if __name__ == '__main__':
     app.run_server(debug=True)
