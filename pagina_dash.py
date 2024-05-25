@@ -1,5 +1,6 @@
 import dash
-from dash import html
+from dash import html, dcc
+from dash.dependencies import Input, Output
 import psycopg2 as psy
 
 dbname = "QCBC"
@@ -59,6 +60,7 @@ def get_quality_data():
 def get_locations():
     query = "select distinct continent_fk, country_fk from coffee_batch where country_fk is not null order by country_fk"
     return fetch_data_from_db(query)
+
 def create_table(data, headers):
     table_style = {
         'borderCollapse': 'collapse',
@@ -105,21 +107,23 @@ def create_table(data, headers):
 
 app.layout = html.Div([
     html.Div(className='header', children=[
-        html.H1("CuppingData: Quality of Coffee By Countries (QCBC)")
+        html.H1("Calidad del Café por País, Continente, Lote de Café y Calidad")
     ]),
     html.Div(className='container', children=[
         html.Div(className='content', children=[
-            html.P("Analizing what you are drinking... ... ..."),
+            html.P("Cafeina :)"),
             html.Button("Show Country Data", id="show-country-button", n_clicks=0),
             html.Button("Show Continent Data", id="show-continent-button", n_clicks=0),
+        ]),
+        html.Div(className='content', children=[
             html.Button("Show Coffee Batch Data", id="show-batch-button", n_clicks=0),
-            html.Button("Show Coffee Quality Data", id="show-quality-button", n_clicks=0),
-            html.Button("Show Analized Countries", id="show-locations-button", n_clicks=0),  # New button
-            html.Div(id="tables-container")
+            html.Button("Show Coffee Quality Data", id="show-quality-button", n_clicks=0)
+        ]),
+        html.Div(className='content', children=[
+            html.Button("Show Analized Countries", id="show-locations-button", n_clicks=0),
         ])
     ]),
-])
-
+    html.Div(id="tables-container") 
 
 @app.callback(
     Output("tables-container", "children"),
@@ -128,10 +132,10 @@ app.layout = html.Div([
         Input("show-continent-button", "n_clicks"),
         Input("show-batch-button", "n_clicks"),
         Input("show-locations-button", "n_clicks"),
-        Input("show-quality-button", "n_clicks")  # New input
+        Input("show-quality-button", "n_clicks")
     ]
 )
-def display_tables(n_clicks_country, n_clicks_continent, n_clicks_batch, n_clicks_locations, n_clicks_quality):  # Updated function signature
+def display_tables(n_clicks_country, n_clicks_continent, n_clicks_batch, n_clicks_locations, n_clicks_quality):
     ctx = dash.callback_context
 
     if not ctx.triggered:
@@ -183,7 +187,7 @@ def display_tables(n_clicks_country, n_clicks_continent, n_clicks_batch, n_click
             html.H2("Locations Data"),
             locations_table
         ]
-    elif button_id == "show-quality-button":  # New condition
+    elif button_id == "show-quality-button":
         quality_data = get_quality_data()
         headers = [
             "Rec ID FK", "Species", "Variety", "Color", "Aroma", "Flavor", "Aftertaste", "Acidity", 
@@ -197,6 +201,7 @@ def display_tables(n_clicks_country, n_clicks_continent, n_clicks_batch, n_click
         ]
 
     return []
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
