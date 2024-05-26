@@ -1,6 +1,6 @@
 # CQBC - Coffee Quality By Country
 
-Proyecto final para el curso Ingenieria de Datos. 
+Proyecto final para el curso Ingenieria de Datos. \\
 Nombre del Proyecto: CuppingData
 Profesor: Javier Casas Salgado
 Universidad del Rosario
