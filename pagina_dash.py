@@ -23,7 +23,7 @@ try:
 except psy.OperationalError as e:
     print(f"Unable to connect to database. Error: {e}")
 
-app = dash.Dash(_name_)
+app = dash.Dash(__name__)
 
 def fetch_data_from_db(query):
     try:
@@ -323,5 +323,5 @@ def display_country_bar_charts(n_clicks_quality_bar):
     return bar_charts
 
 
-if _name_ == '_main_':
+if __name__ == '__main__':
     app.run_server(debug=True)
